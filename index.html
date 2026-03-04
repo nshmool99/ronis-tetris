@@ -2,69 +2,73 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#15000D">
   <title>Roni's Tetris 💖</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Fredoka+One&family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
     /* =====================================================
-       RONI'S TETRIS — Y2K MAXIMALIST GLAM THEME 💖
+       RONI'S TETRIS — Y2K MAXIMALIST GLAM 💖
+       Mobile-first, fully responsive
     ===================================================== */
     :root {
       --hot-pink: #FF1F8E;
-      --magenta: #FF00A8;
       --baby-pink: #FF85C2;
-      --pale-pink: #FFD6EC;
       --dark-bg: #15000D;
-      --panel-bg: rgba(255, 31, 142, 0.08);
+      --panel-bg: rgba(255, 31, 142, 0.09);
       --panel-border: rgba(255, 31, 142, 0.45);
       --gold: #FFD700;
       --white: #FFFBFE;
-      --glow-sm: 0 0 12px rgba(255,31,142,0.7);
-      --glow-md: 0 0 25px rgba(255,31,142,0.5), 0 0 50px rgba(255,31,142,0.25);
-      --block-size: 30;
     }
 
-    *, *::before, *::after {
-      margin: 0; padding: 0; box-sizing: border-box;
-    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-    html, body {
-      width: 100%; height: 100%;
-      overflow: hidden;
+    html {
+      height: 100%;
+      /* Prevent overscroll bounce on iOS */
+      overscroll-behavior: none;
     }
 
     body {
+      height: 100%;
       background: var(--dark-bg);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       font-family: 'Fredoka One', sans-serif;
-      position: relative;
-      min-height: 100vh;
+      overflow: hidden;
+      position: fixed;
+      width: 100%;
+      /* Safe area for notched phones */
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
     }
 
-    /* ── Animated grid background ── */
+    /* ── Animated background ── */
     .bg {
       position: fixed; inset: 0; z-index: 0;
-      background: radial-gradient(ellipse at 20% 30%, #3d0025 0%, transparent 60%),
-                  radial-gradient(ellipse at 80% 70%, #2a0018 0%, transparent 60%),
-                  radial-gradient(ellipse at 50% 10%, #1f0010 0%, transparent 50%),
-                  var(--dark-bg);
+      background:
+        radial-gradient(ellipse at 20% 30%, #3d0025 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 70%, #2a0018 0%, transparent 60%),
+        var(--dark-bg);
     }
     .bg::after {
       content: '';
       position: absolute; inset: 0;
       background-image:
-        repeating-linear-gradient(0deg, transparent, transparent 29px, rgba(255,31,142,0.06) 29px, rgba(255,31,142,0.06) 30px),
-        repeating-linear-gradient(90deg, transparent, transparent 29px, rgba(255,31,142,0.06) 29px, rgba(255,31,142,0.06) 30px);
+        repeating-linear-gradient(0deg, transparent, transparent 29px, rgba(255,31,142,0.05) 29px, rgba(255,31,142,0.05) 30px),
+        repeating-linear-gradient(90deg, transparent, transparent 29px, rgba(255,31,142,0.05) 29px, rgba(255,31,142,0.05) 30px);
       animation: gridDrift 20s linear infinite;
     }
     @keyframes gridDrift {
-      0% { transform: translate(0, 0); }
-      100% { transform: translate(30px, 30px); }
+      0% { transform: translate(0,0); }
+      100% { transform: translate(30px,30px); }
     }
 
     /* ── Sparkle layer ── */
@@ -72,17 +76,18 @@
     .sparkle {
       position: absolute; pointer-events: none;
       animation: sparkleFloat linear infinite;
-      font-size: 1.2rem;
     }
     @keyframes sparkleFloat {
       0%   { transform: translateY(110vh) rotate(0deg) scale(0); opacity: 0; }
-      5%   { opacity: 1; transform: translateY(100vh) rotate(20deg) scale(1); }
-      95%  { opacity: 0.8; }
-      100% { transform: translateY(-10vh) rotate(360deg) scale(0.5); opacity: 0; }
+      8%   { opacity: 1; transform: translateY(95vh) rotate(30deg) scale(1); }
+      92%  { opacity: 0.7; }
+      100% { transform: translateY(-10vh) rotate(360deg) scale(0.4); opacity: 0; }
     }
 
-    /* ── Wrapper ── */
-    .game-wrapper {
+    /* ======================================================
+       DESKTOP LAYOUT (> 620px wide)
+    ====================================================== */
+    .desktop-wrapper {
       position: relative; z-index: 10;
       display: flex;
       flex-direction: column;
@@ -91,52 +96,44 @@
       padding: 10px;
     }
 
-    /* ── Title ── */
+    /* Title */
     .title {
       font-family: 'Pacifico', cursive;
-      font-size: clamp(1.8rem, 5vw, 3rem);
-      line-height: 1;
-      color: #fff;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      color: var(--white);
       text-align: center;
-      text-shadow:
-        0 0 8px #FF1F8E,
-        0 0 20px #FF1F8E,
-        0 0 45px rgba(255,31,142,0.6),
-        4px 4px 0 #8B0043;
+      text-shadow: 0 0 8px #FF1F8E, 0 0 20px #FF1F8E, 0 0 45px rgba(255,31,142,0.5), 4px 4px 0 #8B0043;
       animation: titleGlow 3s ease-in-out infinite;
+      line-height: 1;
     }
     @keyframes titleGlow {
-      0%, 100% { text-shadow: 0 0 8px #FF1F8E, 0 0 20px #FF1F8E, 0 0 45px rgba(255,31,142,0.6), 4px 4px 0 #8B0043; }
-      50%       { text-shadow: 0 0 15px #FF69B4, 0 0 40px #FF69B4, 0 0 80px rgba(255,105,180,0.5), 4px 4px 0 #8B0043; }
+      0%,100% { text-shadow: 0 0 8px #FF1F8E, 0 0 20px #FF1F8E, 0 0 45px rgba(255,31,142,0.5), 4px 4px 0 #8B0043; }
+      50%      { text-shadow: 0 0 15px #FF69B4, 0 0 40px #FF69B4, 0 0 80px rgba(255,105,180,0.4), 4px 4px 0 #8B0043; }
     }
     .title-icon {
       display: inline-block;
       animation: iconWiggle 1.2s ease-in-out infinite alternate;
     }
-    .title-icon:nth-child(3) { animation-delay: 0.3s; }
+    .title-icon:last-child { animation-delay: 0.3s; }
     @keyframes iconWiggle {
       from { transform: rotate(-8deg) scale(1); }
       to   { transform: rotate(8deg) scale(1.1); }
     }
 
-    /* ── Main layout ── */
     .game-layout {
       display: flex;
       gap: 16px;
       align-items: flex-start;
     }
 
-    /* ── Panel ── */
+    /* Panel */
     .panel {
       background: var(--panel-bg);
       border: 2px solid var(--panel-border);
       border-radius: 18px;
       padding: 12px 14px;
       backdrop-filter: blur(12px);
-      box-shadow:
-        0 0 18px rgba(255,31,142,0.2),
-        inset 0 0 20px rgba(255,31,142,0.04),
-        inset 0 1px 0 rgba(255,255,255,0.1);
+      box-shadow: 0 0 18px rgba(255,31,142,0.2), inset 0 1px 0 rgba(255,255,255,0.1);
       position: relative;
       overflow: hidden;
     }
@@ -146,10 +143,8 @@
       top: 0; left: 0; right: 0; height: 1px;
       background: linear-gradient(90deg, transparent, rgba(255,182,213,0.6), transparent);
     }
-
     .panel-label {
-      font-size: 0.7rem;
-      font-family: 'Fredoka One', sans-serif;
+      font-size: 0.68rem;
       color: var(--baby-pink);
       text-transform: uppercase;
       letter-spacing: 3px;
@@ -158,7 +153,7 @@
     }
     .panel-value {
       font-family: 'Pacifico', cursive;
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       color: var(--white);
       text-align: center;
       text-shadow: 0 0 10px var(--hot-pink);
@@ -169,84 +164,68 @@
       text-shadow: 0 0 10px var(--gold), 0 0 20px rgba(255,215,0,0.4);
     }
 
-    /* ── Side panels ── */
     .side-panel {
       display: flex;
       flex-direction: column;
       gap: 12px;
-      width: 130px;
+      width: 128px;
     }
 
-    /* ── Canvas ── */
+    /* Desktop canvas */
     #gameCanvas {
       display: block;
       border: 2px solid var(--hot-pink);
       border-radius: 14px;
-      box-shadow:
-        0 0 25px var(--hot-pink),
-        0 0 55px rgba(255,31,142,0.35),
-        0 0 100px rgba(255,31,142,0.15);
+      box-shadow: 0 0 25px var(--hot-pink), 0 0 55px rgba(255,31,142,0.35);
+      touch-action: none;
     }
 
-    #nextCanvas {
-      display: block;
-      margin: 0 auto;
-    }
+    #nextCanvas { display: block; margin: 0 auto; }
 
-    /* ── Controls hint ── */
     .controls-hint {
-      font-size: 0.68rem;
+      font-size: 0.65rem;
       color: rgba(255,133,194,0.8);
       line-height: 2;
       text-align: center;
     }
-    .controls-hint b {
-      color: var(--white);
-      font-size: 0.72rem;
-    }
+    .controls-hint b { color: var(--white); }
 
-    /* ── Overlay ── */
+    /* ── Overlay (shared) ── */
     #overlay {
       position: absolute;
       inset: 0;
       border-radius: 14px;
-      background: rgba(21, 0, 13, 0.93);
+      background: rgba(21,0,13,0.93);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 18px;
+      gap: 16px;
       z-index: 30;
       backdrop-filter: blur(6px);
       padding: 20px;
     }
-
     .overlay-title {
       font-family: 'Pacifico', cursive;
-      font-size: 1.8rem;
+      font-size: 1.7rem;
       color: var(--white);
       text-align: center;
-      line-height: 1.3;
       text-shadow: 0 0 15px var(--hot-pink);
+      line-height: 1.3;
     }
-
     .overlay-sub {
       font-family: 'Nunito', sans-serif;
-      font-size: 0.88rem;
+      font-size: 0.85rem;
       color: var(--baby-pink);
       text-align: center;
       line-height: 2;
     }
-    .overlay-sub strong {
-      color: var(--hot-pink);
-      font-size: 1rem;
-    }
-
+    .overlay-sub strong { color: var(--hot-pink); }
     .play-btn {
       font-family: 'Fredoka One', sans-serif;
-      font-size: 1.25rem;
-      padding: 14px 40px;
-      background: linear-gradient(135deg, #FF1F8E 0%, #FF69B4 50%, #FF00A8 100%);
+      font-size: 1.2rem;
+      padding: 13px 38px;
+      background: linear-gradient(135deg, #FF1F8E, #FF69B4, #FF00A8);
       background-size: 200% 200%;
       color: #fff;
       border: none;
@@ -254,37 +233,29 @@
       cursor: pointer;
       letter-spacing: 2px;
       text-transform: uppercase;
-      box-shadow:
-        0 0 20px var(--hot-pink),
-        0 4px 20px rgba(0,0,0,0.4),
-        inset 0 1px 0 rgba(255,255,255,0.3);
+      box-shadow: 0 0 20px var(--hot-pink), 0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
       animation: btnPulse 2s ease infinite;
-      transition: transform 0.15s, box-shadow 0.15s;
+      transition: transform 0.15s;
+      touch-action: manipulation;
     }
-    .play-btn:hover {
-      transform: scale(1.06) translateY(-2px);
-      box-shadow: 0 0 35px var(--hot-pink), 0 8px 25px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
-    }
-    .play-btn:active { transform: scale(0.97); }
+    .play-btn:active { transform: scale(0.96); }
     @keyframes btnPulse {
-      0%, 100% { background-position: 0% 50%; }
-      50%       { background-position: 100% 50%; }
+      0%,100% { background-position: 0% 50%; }
+      50%      { background-position: 100% 50%; }
     }
 
-    /* ── Line clear flash ── */
+    /* ── Effects ── */
     @keyframes clearFlash {
       0%   { filter: brightness(1); }
-      25%  { filter: brightness(2.5) saturate(2); }
-      75%  { filter: brightness(2) saturate(1.5); }
+      30%  { filter: brightness(2.8) saturate(2); }
       100% { filter: brightness(1); }
     }
-    .flashing { animation: clearFlash 0.3s ease-out 2; }
+    .flashing { animation: clearFlash 0.35s ease-out 2; }
 
-    /* ── Score popup ── */
     .score-popup {
       position: absolute;
       font-family: 'Pacifico', cursive;
-      font-size: 1.4rem;
+      font-size: 1.3rem;
       color: var(--gold);
       text-shadow: 0 0 10px var(--gold);
       pointer-events: none;
@@ -293,53 +264,202 @@
       white-space: nowrap;
     }
     @keyframes popUp {
-      0%   { transform: translateY(0) scale(0.8); opacity: 1; }
-      60%  { transform: translateY(-50px) scale(1.1); opacity: 1; }
-      100% { transform: translateY(-80px) scale(0.9); opacity: 0; }
+      0%   { transform: translateX(-50%) translateY(0) scale(0.8); opacity: 1; }
+      60%  { transform: translateX(-50%) translateY(-50px) scale(1.1); opacity: 1; }
+      100% { transform: translateX(-50%) translateY(-80px) scale(0.9); opacity: 0; }
     }
 
-    /* ── Mobile controls ── */
-    .mobile-controls {
+    /* ======================================================
+       MOBILE LAYOUT — portrait phones (≤ 620px)
+    ====================================================== */
+    /* Mobile wrapper replaces desktop-wrapper on small screens */
+    .mobile-wrapper {
       display: none;
+      position: relative; z-index: 10;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
-      margin-top: 4px;
+      width: 100%;
+      height: 100%;
+      /* We'll compute exact heights in JS */
     }
-    .mobile-row { display: flex; gap: 8px; }
-    .m-btn {
-      width: 58px; height: 58px;
-      background: linear-gradient(135deg, rgba(255,31,142,0.25), rgba(255,0,168,0.15));
+
+    /* Compact title strip */
+    .mobile-title {
+      font-family: 'Pacifico', cursive;
+      font-size: 1.4rem;
+      color: var(--white);
+      text-align: center;
+      text-shadow: 0 0 8px #FF1F8E, 0 0 20px #FF1F8E, 3px 3px 0 #8B0043;
+      animation: titleGlow 3s ease-in-out infinite;
+      padding: 6px 0 4px;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    /* Horizontal stats bar above canvas */
+    .mobile-stats {
+      display: flex;
+      gap: 6px;
+      align-items: stretch;
+      width: 100%;
+      padding: 0 8px;
+      flex-shrink: 0;
+    }
+    .mobile-stat {
+      flex: 1;
+      background: var(--panel-bg);
+      border: 1.5px solid var(--panel-border);
+      border-radius: 12px;
+      padding: 5px 4px;
+      text-align: center;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 0 10px rgba(255,31,142,0.15);
+    }
+    .mobile-stat-label {
+      font-size: 0.55rem;
+      color: var(--baby-pink);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      line-height: 1;
+    }
+    .mobile-stat-value {
+      font-family: 'Pacifico', cursive;
+      font-size: 1rem;
+      color: var(--white);
+      text-shadow: 0 0 8px var(--hot-pink);
+      line-height: 1.2;
+    }
+    .mobile-stat-value.gold {
+      color: var(--gold);
+      text-shadow: 0 0 8px var(--gold);
+    }
+
+    /* Mobile canvas area */
+    .mobile-canvas-area {
+      position: relative;
+      flex-shrink: 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* Next piece - floats over canvas top-right */
+    .mobile-next-wrap {
+      position: absolute;
+      top: 4px; right: 4px;
+      background: rgba(21,0,13,0.85);
+      border: 1.5px solid var(--panel-border);
+      border-radius: 10px;
+      padding: 4px;
+      z-index: 5;
+      backdrop-filter: blur(8px);
+    }
+    .mobile-next-label {
+      font-size: 0.5rem;
+      color: var(--baby-pink);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-align: center;
+      margin-bottom: 2px;
+    }
+    #nextCanvasMobile { display: block; }
+
+    /* ── Mobile touch controls ── */
+    .mobile-controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+      padding: 6px 12px;
+      flex-shrink: 0;
+    }
+
+    .ctrl-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .ctrl-btn {
+      background: linear-gradient(145deg, rgba(255,31,142,0.22), rgba(255,0,168,0.12));
       border: 2px solid rgba(255,31,142,0.5);
-      border-radius: 14px;
-      font-size: 1.5rem;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
       color: #fff;
       font-family: 'Fredoka One', sans-serif;
       touch-action: manipulation;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
-      transition: background 0.1s, transform 0.1s;
-      box-shadow: 0 0 8px rgba(255,31,142,0.2);
+      transition: background 0.08s, transform 0.08s;
+      box-shadow: 0 0 10px rgba(255,31,142,0.2), 0 3px 8px rgba(0,0,0,0.3);
+      position: relative;
+      overflow: hidden;
     }
-    .m-btn:active {
-      background: rgba(255,31,142,0.5);
-      transform: scale(0.93);
+    .ctrl-btn::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 40%;
+      background: rgba(255,255,255,0.08);
+      border-radius: 14px 14px 0 0;
+    }
+    .ctrl-btn:active,
+    .ctrl-btn.pressed {
+      background: rgba(255,31,142,0.45);
+      transform: scale(0.92);
+      box-shadow: 0 0 20px var(--hot-pink);
     }
 
-    /* ── Responsive ── */
-    @media (max-width: 620px) {
-      .game-layout { flex-direction: column; align-items: center; gap: 10px; }
-      .side-panel { flex-direction: row; width: auto; flex-wrap: wrap; justify-content: center; }
-      .side-panel .panel { min-width: 90px; }
-      .controls-hint { display: none; }
-      .mobile-controls { display: flex; }
-      .title { font-size: 1.8rem; }
+    /* Size variants */
+    .ctrl-btn.sm  { width: 58px;  height: 58px;  font-size: 1.6rem; }
+    .ctrl-btn.md  { width: 70px;  height: 58px;  font-size: 1.6rem; }
+    .ctrl-btn.lg  { width: 100%;  height: 54px;  font-size: 1.5rem; letter-spacing: 2px; border-radius: 14px; }
+
+    /* Pause button */
+    .ctrl-btn.pause-btn {
+      width: 48px; height: 48px;
+      font-size: 1.2rem;
+      background: rgba(255,31,142,0.1);
     }
-    @media (max-height: 700px) {
-      .game-wrapper { gap: 8px; }
-      .title { font-size: 1.6rem; }
+
+    /* ── Swipe hint ── */
+    .swipe-hint {
+      font-size: 0.6rem;
+      color: rgba(255,133,194,0.5);
+      text-align: center;
+      letter-spacing: 1px;
+      margin-top: -2px;
+      flex-shrink: 0;
+    }
+
+    /* ======================================================
+       LANDSCAPE MOBILE (short height, wide width)
+    ====================================================== */
+    @media (max-height: 500px) and (orientation: landscape) {
+      .mobile-title { font-size: 1rem; padding: 2px 0; }
+      .mobile-stats { gap: 4px; padding: 0 4px; }
+      .mobile-stat { padding: 3px; }
+      .mobile-stat-value { font-size: 0.85rem; }
+      .mobile-controls { gap: 4px; padding: 4px 8px; }
+      .ctrl-btn.sm { width: 48px; height: 44px; font-size: 1.3rem; }
+      .ctrl-btn.md { width: 58px; height: 44px; font-size: 1.3rem; }
+      .ctrl-btn.lg { height: 42px; font-size: 1.1rem; }
+    }
+
+    /* ======================================================
+       BREAKPOINT: switch between mobile / desktop
+    ====================================================== */
+    @media (max-width: 620px) {
+      .desktop-wrapper { display: none; }
+      .mobile-wrapper  { display: flex; }
+    }
+    @media (min-width: 621px) {
+      .mobile-wrapper  { display: none; }
+      .desktop-wrapper { display: flex; }
     }
   </style>
 </head>
@@ -348,19 +468,17 @@
 <div class="bg"></div>
 <div id="sparkles"></div>
 
-<div class="game-wrapper">
+<!-- ===================== DESKTOP ===================== -->
+<div class="desktop-wrapper">
 
-  <!-- Title -->
   <div class="title">
     <span class="title-icon">👑</span>
     Roni's Tetris
     <span class="title-icon">💖</span>
   </div>
 
-  <!-- Game layout -->
   <div class="game-layout">
 
-    <!-- LEFT panel -->
     <div class="side-panel">
       <div class="panel">
         <div class="panel-label">✨ Score</div>
@@ -376,28 +494,22 @@
       </div>
     </div>
 
-    <!-- Canvas wrapper -->
     <div style="position:relative">
       <canvas id="gameCanvas" width="300" height="600"></canvas>
-
-      <!-- Overlay -->
+      <!-- Overlay (desktop) -->
       <div id="overlay">
-        <div class="overlay-title" id="overlayTitle">
-          💖 Roni's Tetris 💖
-        </div>
+        <div class="overlay-title" id="overlayTitle">💖 Roni's Tetris 💖</div>
         <div class="overlay-sub" id="overlaySub">
           Stack the girlies!<br>
-          Clear lines for glam points! 🌸<br>
-          <br>
+          Clear lines for glam points! 🌸<br><br>
           ← → <b>move</b> &nbsp; ↑ <b>rotate</b><br>
           ↓ <b>soft drop</b> &nbsp; <b>Space</b> hard drop<br>
           <b>P</b> pause
         </div>
-        <button class="play-btn" id="startBtn">🎀 Let's Go! 🎀</button>
+        <button class="play-btn" id="startBtnDesktop">🎀 Let's Go! 🎀</button>
       </div>
     </div>
 
-    <!-- RIGHT panel -->
     <div class="side-panel">
       <div class="panel">
         <div class="panel-label">💕 Next</div>
@@ -418,130 +530,174 @@
     </div>
 
   </div>
+</div>
 
-  <!-- Mobile controls -->
-  <div class="mobile-controls">
-    <div class="mobile-row">
-      <button class="m-btn" id="mb-rotate">🔄</button>
+<!-- ===================== MOBILE ===================== -->
+<div class="mobile-wrapper" id="mobileWrapper">
+
+  <!-- Title -->
+  <div class="mobile-title">👑 Roni's Tetris 💖</div>
+
+  <!-- Stats strip -->
+  <div class="mobile-stats">
+    <div class="mobile-stat">
+      <div class="mobile-stat-label">✨ Score</div>
+      <div class="mobile-stat-value" id="mScoreVal">0</div>
     </div>
-    <div class="mobile-row">
-      <button class="m-btn" id="mb-left">⬅️</button>
-      <button class="m-btn" id="mb-down">⬇️</button>
-      <button class="m-btn" id="mb-right">➡️</button>
+    <div class="mobile-stat">
+      <div class="mobile-stat-label">💅 Level</div>
+      <div class="mobile-stat-value gold" id="mLevelVal">1</div>
     </div>
-    <div class="mobile-row">
-      <button class="m-btn" id="mb-drop">💥 Drop</button>
+    <div class="mobile-stat">
+      <div class="mobile-stat-label">🌸 Lines</div>
+      <div class="mobile-stat-value" id="mLinesVal">0</div>
+    </div>
+    <div class="mobile-stat">
+      <div class="mobile-stat-label">🏆 Best</div>
+      <div class="mobile-stat-value gold" id="mBestVal">0</div>
     </div>
   </div>
+
+  <!-- Canvas area -->
+  <div class="mobile-canvas-area" id="mobileCanvasArea">
+    <canvas id="mobileCanvas" style="display:block; border-radius:12px; border:2px solid var(--hot-pink); box-shadow:0 0 20px var(--hot-pink), 0 0 50px rgba(255,31,142,0.3); touch-action:none;"></canvas>
+
+    <!-- Floating next piece -->
+    <div class="mobile-next-wrap" id="mobileNextWrap">
+      <div class="mobile-next-label">💕 Next</div>
+      <canvas id="nextCanvasMobile" width="60" height="60"></canvas>
+    </div>
+
+    <!-- Mobile overlay -->
+    <div id="mobileOverlay" style="position:absolute;inset:0;border-radius:12px;background:rgba(21,0,13,0.93);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:30;backdrop-filter:blur(6px);padding:16px;">
+      <div class="overlay-title" id="mOverlayTitle">💖 Roni's Tetris 💖</div>
+      <div class="overlay-sub" id="mOverlaySub">
+        Stack the girlies!<br>
+        Clear lines for glam points! 🌸<br><br>
+        <b>Swipe</b> to move &amp; rotate<br>
+        Tap buttons below to play
+      </div>
+      <button class="play-btn" id="startBtnMobile">🎀 Let's Go! 🎀</button>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="mobile-controls">
+    <!-- Row 1: Rotate + Pause -->
+    <div class="ctrl-row">
+      <button class="ctrl-btn sm" id="mb-rotate" aria-label="Rotate">🔄</button>
+      <button class="ctrl-btn lg" id="mb-drop" aria-label="Hard Drop">💥 Drop!</button>
+      <button class="ctrl-btn pause-btn ctrl-btn" id="mb-pause" aria-label="Pause">⏸</button>
+    </div>
+    <!-- Row 2: Left / Down / Right -->
+    <div class="ctrl-row">
+      <button class="ctrl-btn md" id="mb-left"  aria-label="Move Left">⬅️</button>
+      <button class="ctrl-btn md" id="mb-down"  aria-label="Soft Drop">⬇️</button>
+      <button class="ctrl-btn md" id="mb-right" aria-label="Move Right">➡️</button>
+    </div>
+  </div>
+
+  <div class="swipe-hint">✨ swipe on the board to move &amp; rotate ✨</div>
 
 </div>
 
 <script>
 /* =========================================================
    RONI'S TETRIS — Full Game Engine
-   Y2K Maximalist Glam | Girly Emoji Pieces
-   Design: Frontend Design Mode 💖
+   Mobile-first with swipe, auto-scaling canvas, touch controls
 ========================================================= */
 
-// ── Canvas setup ──────────────────────────────────────────
-const canvas  = document.getElementById('gameCanvas');
-const ctx     = canvas.getContext('2d');
-const nextCvs = document.getElementById('nextCanvas');
-const nextCtx = nextCvs.getContext('2d');
+// ── Emoji & color maps ───────────────────────────────────
+const EMOJI = { I:'🌸', O:'💖', T:'🎀', S:'🦋', Z:'💄', L:'💅', J:'🌺' };
+const COLORS = { I:'#FF69B4', O:'#FF1F8E', T:'#FF85C2', S:'#FF4DB3', Z:'#FF007A', L:'#FF9FD4', J:'#FF2D8A' };
 
-// ── Constants ─────────────────────────────────────────────
-const COLS       = 10;
-const ROWS       = 20;
-const BS         = 30;   // block size px
-const PAD        = 2;    // block padding
-
-// ── Girly emoji map per piece type ────────────────────────
-const EMOJI = {
-  I: '🌸', // Cherry Blossom — long, elegant
-  O: '💖', // Sparkling Heart — square & cute
-  T: '🎀', // Bow Ribbon — T-shaped flair
-  S: '🦋', // Butterfly — flowing S-curve
-  Z: '💄', // Lipstick — sharp Z-edge
-  L: '💅', // Nail Polish — L-shape glam
-  J: '🌺', // Hibiscus — J-shape bloom
-};
-
-// ── Piece glow colors ─────────────────────────────────────
-const COLORS = {
-  I: '#FF69B4',
-  O: '#FF1F8E',
-  T: '#FF85C2',
-  S: '#FF4DB3',
-  Z: '#FF007A',
-  L: '#FF9FD4',
-  J: '#FF2D8A',
-};
-
-// ── Tetromino shapes (all 4 rotations each) ───────────────
+// ── Tetromino shapes ─────────────────────────────────────
 const SHAPES = {
-  I: [
-    [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],
-    [[0,0,1,0],[0,0,1,0],[0,0,1,0],[0,0,1,0]],
-    [[0,0,0,0],[0,0,0,0],[1,1,1,1],[0,0,0,0]],
-    [[0,1,0,0],[0,1,0,0],[0,1,0,0],[0,1,0,0]],
-  ],
-  O: [
-    [[1,1],[1,1]],
-  ],
-  T: [
-    [[0,1,0],[1,1,1],[0,0,0]],
-    [[0,1,0],[0,1,1],[0,1,0]],
-    [[0,0,0],[1,1,1],[0,1,0]],
-    [[0,1,0],[1,1,0],[0,1,0]],
-  ],
-  S: [
-    [[0,1,1],[1,1,0],[0,0,0]],
-    [[0,1,0],[0,1,1],[0,0,1]],
-    [[0,0,0],[0,1,1],[1,1,0]],
-    [[1,0,0],[1,1,0],[0,1,0]],
-  ],
-  Z: [
-    [[1,1,0],[0,1,1],[0,0,0]],
-    [[0,0,1],[0,1,1],[0,1,0]],
-    [[0,0,0],[1,1,0],[0,1,1]],
-    [[0,1,0],[1,1,0],[1,0,0]],
-  ],
-  L: [
-    [[0,0,1],[1,1,1],[0,0,0]],
-    [[0,1,0],[0,1,0],[0,1,1]],
-    [[0,0,0],[1,1,1],[1,0,0]],
-    [[1,1,0],[0,1,0],[0,1,0]],
-  ],
-  J: [
-    [[1,0,0],[1,1,1],[0,0,0]],
-    [[0,1,1],[0,1,0],[0,1,0]],
-    [[0,0,0],[1,1,1],[0,0,1]],
-    [[0,1,0],[0,1,0],[1,1,0]],
-  ],
+  I: [[[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],[[0,0,1,0],[0,0,1,0],[0,0,1,0],[0,0,1,0]],[[0,0,0,0],[0,0,0,0],[1,1,1,1],[0,0,0,0]],[[0,1,0,0],[0,1,0,0],[0,1,0,0],[0,1,0,0]]],
+  O: [[[1,1],[1,1]]],
+  T: [[[0,1,0],[1,1,1],[0,0,0]],[[0,1,0],[0,1,1],[0,1,0]],[[0,0,0],[1,1,1],[0,1,0]],[[0,1,0],[1,1,0],[0,1,0]]],
+  S: [[[0,1,1],[1,1,0],[0,0,0]],[[0,1,0],[0,1,1],[0,0,1]],[[0,0,0],[0,1,1],[1,1,0]],[[1,0,0],[1,1,0],[0,1,0]]],
+  Z: [[[1,1,0],[0,1,1],[0,0,0]],[[0,0,1],[0,1,1],[0,1,0]],[[0,0,0],[1,1,0],[0,1,1]],[[0,1,0],[1,1,0],[1,0,0]]],
+  L: [[[0,0,1],[1,1,1],[0,0,0]],[[0,1,0],[0,1,0],[0,1,1]],[[0,0,0],[1,1,1],[1,0,0]],[[1,1,0],[0,1,0],[0,1,0]]],
+  J: [[[1,0,0],[1,1,1],[0,0,0]],[[0,1,1],[0,1,0],[0,1,0]],[[0,0,0],[1,1,1],[0,0,1]],[[0,1,0],[0,1,0],[1,1,0]]],
 };
-
 const TYPES = Object.keys(SHAPES);
 
-// ── Score table ───────────────────────────────────────────
-const LINE_SCORES  = [0, 100, 300, 500, 800];
-const LINE_MSGS    = ['', 'Sweet! 🌸', 'Gorgeous! 💖', 'Stunning! 🎀', 'QUEEN! 👑'];
+// ── Scoring ───────────────────────────────────────────────
+const LINE_SCORES = [0, 100, 300, 500, 800];
+const LINE_MSGS   = ['', 'Sweet! 🌸', 'Gorgeous! 💖', 'Stunning! 🎀', 'QUEEN! 👑'];
 const LINES_PER_LV = 10;
-const BASE_DROP    = 800;   // ms per row at level 1
+const BASE_DROP    = 800;
 const MIN_DROP     = 80;
+const COLS = 10, ROWS = 20;
 
-// ── Game state ────────────────────────────────────────────
+// ── State ─────────────────────────────────────────────────
 let board, cur, next, bag;
 let score, lines, level, highScore;
 let dropAcc, dropMs, lastTs;
 let running, paused;
+let BS = 30; // current block size (dynamic on mobile)
 
-highScore = parseInt(localStorage.getItem('ronis-hs') || '0');
-document.getElementById('bestVal').textContent = highScore.toLocaleString();
+// ── Canvas references ─────────────────────────────────────
+// Desktop
+const desktopCanvas  = document.getElementById('gameCanvas');
+const desktopCtx     = desktopCanvas.getContext('2d');
+const desktopNextCvs = document.getElementById('nextCanvas');
+const desktopNextCtx = desktopNextCvs.getContext('2d');
+// Mobile
+const mobileCanvas   = document.getElementById('mobileCanvas');
+const mobileCtx      = mobileCanvas.getContext('2d');
+const mobileNextCvs  = document.getElementById('nextCanvasMobile');
+const mobileNextCtx  = mobileNextCvs.getContext('2d');
+
+// Active canvas/ctx (swapped based on viewport)
+let canvas, ctx, nextCvs, nextCtx;
+
+function isMobile() { return window.innerWidth <= 620; }
+
+// ── Dynamic canvas sizing for mobile ─────────────────────
+function computeMobileBS() {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  // Measure real heights of surrounding elements
+  const titleH   = 34;
+  const statsH   = 52;
+  const ctrlH    = 130;
+  const hintH    = 20;
+  const padding  = 24;
+  const safeTop  = parseInt(getComputedStyle(document.body).paddingTop)  || 0;
+  const safeBtm  = parseInt(getComputedStyle(document.body).paddingBottom) || 0;
+  const availH   = vh - titleH - statsH - ctrlH - hintH - padding - safeTop - safeBtm;
+  const availW   = vw - 16;
+  return Math.max(18, Math.floor(Math.min(availW / COLS, availH / ROWS)));
+}
+
+function setupMobileCanvas() {
+  BS = computeMobileBS();
+  mobileCanvas.width  = BS * COLS;
+  mobileCanvas.height = BS * ROWS;
+  // Center it
+  document.getElementById('mobileCanvasArea').style.width = mobileCanvas.width + 'px';
+}
+
+function setupCanvases() {
+  if (isMobile()) {
+    setupMobileCanvas();
+    canvas   = mobileCanvas;
+    ctx      = mobileCtx;
+    nextCvs  = mobileNextCvs;
+    nextCtx  = mobileNextCtx;
+  } else {
+    BS       = 30;
+    canvas   = desktopCanvas;
+    ctx      = desktopCtx;
+    nextCvs  = desktopNextCvs;
+    nextCtx  = desktopNextCtx;
+  }
+}
 
 // ── Board helpers ─────────────────────────────────────────
-function newBoard() {
-  return Array.from({ length: ROWS }, () => new Array(COLS).fill(null));
-}
+function newBoard()  { return Array.from({ length: ROWS }, () => new Array(COLS).fill(null)); }
 
 function makePiece(type) {
   const shape = SHAPES[type];
@@ -578,18 +734,14 @@ function valid(piece, dx = 0, dy = 0, shape = null) {
   return true;
 }
 
-// ── Piece actions ─────────────────────────────────────────
+// ── Actions ───────────────────────────────────────────────
 function rotate() {
   if (!running || paused) return;
-  const nextRot = (cur.rot + 1) % cur.rots.length;
-  const ns = cur.rots[nextRot];
-  // Wall-kick offsets
-  for (const kick of [0, -1, 1, -2, 2]) {
-    if (valid(cur, kick, 0, ns)) {
-      cur.shape = ns;
-      cur.rot   = nextRot;
-      cur.x    += kick;
-      return;
+  const nr = (cur.rot + 1) % cur.rots.length;
+  const ns = cur.rots[nr];
+  for (const k of [0, -1, 1, -2, 2]) {
+    if (valid(cur, k, 0, ns)) {
+      cur.shape = ns; cur.rot = nr; cur.x += k; return;
     }
   }
 }
@@ -607,9 +759,7 @@ function hardDrop() {
   if (!running || paused) return;
   let n = 0;
   while (valid(cur, 0, 1)) { cur.y++; n++; }
-  score += n * 2;
-  updateUI();
-  lock();
+  score += n * 2; updateUI(); lock();
 }
 
 function ghostY() {
@@ -624,7 +774,7 @@ function lock() {
     for (let c = 0; c < cur.shape[r].length; c++) {
       if (!cur.shape[r][c]) continue;
       const ny = cur.y + r;
-      if (ny < 0) { gameOver(); return; }
+      if (ny < 0) { endGame(); return; }
       board[ny][cur.x + c] = { emoji: cur.emoji, color: cur.color };
     }
   }
@@ -638,8 +788,7 @@ function clearLines() {
     if (board[r].every(c => c !== null)) {
       board.splice(r, 1);
       board.unshift(new Array(COLS).fill(null));
-      cleared++;
-      r++;
+      cleared++; r++;
     }
   }
   if (!cleared) return;
@@ -647,66 +796,61 @@ function clearLines() {
   score += LINE_SCORES[cleared] * level;
   level  = Math.floor(lines / LINES_PER_LV) + 1;
   dropMs = Math.max(MIN_DROP, BASE_DROP - (level - 1) * 65);
-  updateUI();
-  flashCanvas();
+  updateUI(); flashCanvas();
   showScorePopup(LINE_MSGS[cleared], LINE_SCORES[cleared] * level);
 }
 
 function spawn() {
   cur  = next || makePiece(nextFromBag());
   next = makePiece(nextFromBag());
-  if (!valid(cur)) { gameOver(); return; }
+  if (!valid(cur)) { endGame(); return; }
   drawNext();
 }
 
 // ── Game flow ─────────────────────────────────────────────
 function startGame() {
+  setupCanvases();
   board  = newBoard();
   bag    = [];
   score  = 0; lines = 0; level = 1;
   dropMs = BASE_DROP; dropAcc = 0;
   paused = false; running = true;
-
-  document.getElementById('overlay').style.display = 'none';
+  hideOverlays();
   updateUI();
-
   next = makePiece(nextFromBag());
   spawn();
-
   lastTs = performance.now();
   requestAnimationFrame(loop);
 }
 
-function gameOver() {
+function endGame() {
   running = false;
   if (score > highScore) {
     highScore = score;
     localStorage.setItem('ronis-hs', highScore);
-    document.getElementById('bestVal').textContent = highScore.toLocaleString();
   }
-  setTimeout(() => {
-    document.getElementById('overlayTitle').innerHTML = '💔 Game Over! 💔';
-    document.getElementById('overlaySub').innerHTML =
-      `Score: <strong>${score.toLocaleString()}</strong><br>` +
-      `Lines: <strong>${lines}</strong> &nbsp; Level: <strong>${level}</strong><br><br>` +
-      (score >= highScore ? '✨ New High Score! 🏆✨<br>' : '') +
-      '<br>Try again, queen? 👑';
-    document.getElementById('startBtn').textContent = '🎀 Play Again 🎀';
-    document.getElementById('overlay').style.display = 'flex';
-  }, 400);
+  const isNew = score >= highScore;
+  const msg =
+    `Score: <strong>${score.toLocaleString()}</strong><br>` +
+    `Lines: <strong>${lines}</strong> &nbsp; Level: <strong>${level}</strong><br><br>` +
+    (isNew ? '✨ New High Score! 🏆✨<br>' : '') +
+    '<br>Try again, queen? 👑';
+  setTimeout(() => showOverlay('💔 Game Over! 💔', msg, '🎀 Play Again 🎀'), 400);
 }
 
 function togglePause() {
   if (!running) return;
   paused = !paused;
   if (!paused) { lastTs = performance.now(); requestAnimationFrame(loop); }
+  // Update pause button
+  const pb = document.getElementById('mb-pause');
+  if (pb) pb.textContent = paused ? '▶️' : '⏸';
 }
 
 // ── Game loop ─────────────────────────────────────────────
 function loop(ts) {
   if (!running || paused) return;
-  const delta = ts - lastTs;
-  lastTs = ts;
+  const delta = ts - lastTs; lastTs = ts;
   dropAcc += delta;
   if (dropAcc >= dropMs) {
     dropAcc = 0;
@@ -719,157 +863,171 @@ function loop(ts) {
 
 // ── Rendering ─────────────────────────────────────────────
 function drawBlock(context, bx, by, cell, alpha = 1, size = BS) {
-  const p = PAD;
-  const r = Math.max(4, size * 0.2);
-  const w = size - p * 2;
-
+  const p = Math.max(1, size * 0.07);
+  const rr = Math.max(3, size * 0.18);
+  const w  = size - p * 2;
   context.save();
   context.globalAlpha = alpha;
 
-  // Background gradient
-  const g = context.createLinearGradient(bx + p, by + p, bx + p + w, by + p + w);
+  const g = context.createLinearGradient(bx+p, by+p, bx+p+w, by+p+w);
   g.addColorStop(0, cell.color + 'F0');
-  g.addColorStop(1, cell.color + '80');
+  g.addColorStop(1, cell.color + '70');
   context.fillStyle = g;
 
-  // Rounded rectangle
   context.beginPath();
-  context.moveTo(bx + p + r, by + p);
-  context.lineTo(bx + p + w - r, by + p);
-  context.quadraticCurveTo(bx + p + w, by + p, bx + p + w, by + p + r);
-  context.lineTo(bx + p + w, by + p + w - r);
-  context.quadraticCurveTo(bx + p + w, by + p + w, bx + p + w - r, by + p + w);
-  context.lineTo(bx + p + r, by + p + w);
-  context.quadraticCurveTo(bx + p, by + p + w, bx + p, by + p + w - r);
-  context.lineTo(bx + p, by + p + r);
-  context.quadraticCurveTo(bx + p, by + p, bx + p + r, by + p);
+  context.moveTo(bx+p+rr, by+p);
+  context.lineTo(bx+p+w-rr, by+p);
+  context.quadraticCurveTo(bx+p+w, by+p, bx+p+w, by+p+rr);
+  context.lineTo(bx+p+w, by+p+w-rr);
+  context.quadraticCurveTo(bx+p+w, by+p+w, bx+p+w-rr, by+p+w);
+  context.lineTo(bx+p+rr, by+p+w);
+  context.quadraticCurveTo(bx+p, by+p+w, bx+p, by+p+w-rr);
+  context.lineTo(bx+p, by+p+rr);
+  context.quadraticCurveTo(bx+p, by+p, bx+p+rr, by+p);
   context.closePath();
   context.fill();
 
-  // Glossy shine
-  context.fillStyle = 'rgba(255,255,255,0.22)';
+  // Shine
+  context.fillStyle = 'rgba(255,255,255,0.2)';
   context.beginPath();
-  context.ellipse(bx + p + w * 0.38, by + p + w * 0.28, w * 0.28, w * 0.15, -0.3, 0, Math.PI * 2);
+  context.ellipse(bx+p+w*0.36, by+p+w*0.26, w*0.26, w*0.13, -0.3, 0, Math.PI*2);
   context.fill();
 
-  // Emoji
-  context.font = `${size * 0.62}px serif`;
+  // Emoji (scale with block size)
+  context.font = `${size * 0.60}px serif`;
   context.textAlign    = 'center';
   context.textBaseline = 'middle';
   context.globalAlpha  = alpha;
-  context.fillText(cell.emoji, bx + size / 2, by + size / 2 + 1);
-
+  context.fillText(cell.emoji, bx + size/2, by + size/2 + size*0.04);
   context.restore();
 }
 
 function render() {
-  // Background
-  ctx.fillStyle = 'rgba(15, 0, 9, 0.92)';
+  ctx.fillStyle = 'rgba(12,0,8,0.94)';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Grid
-  ctx.strokeStyle = 'rgba(255,31,142,0.08)';
+  ctx.strokeStyle = 'rgba(255,31,142,0.07)';
   ctx.lineWidth   = 0.5;
   for (let r = 0; r <= ROWS; r++) {
-    ctx.beginPath(); ctx.moveTo(0, r * BS); ctx.lineTo(COLS * BS, r * BS); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, r*BS); ctx.lineTo(COLS*BS, r*BS); ctx.stroke();
   }
   for (let c = 0; c <= COLS; c++) {
-    ctx.beginPath(); ctx.moveTo(c * BS, 0); ctx.lineTo(c * BS, ROWS * BS); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(c*BS, 0); ctx.lineTo(c*BS, ROWS*BS); ctx.stroke();
   }
 
-  // Locked pieces
-  for (let r = 0; r < ROWS; r++) {
-    for (let c = 0; c < COLS; c++) {
-      if (board[r][c]) drawBlock(ctx, c * BS, r * BS, board[r][c]);
-    }
-  }
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++)
+      if (board[r][c]) drawBlock(ctx, c*BS, r*BS, board[r][c]);
 
-  // Ghost piece
+  // Ghost
   if (cur && !paused) {
     const gy = ghostY();
     if (gy !== cur.y) {
-      for (let r = 0; r < cur.shape.length; r++) {
-        for (let c = 0; c < cur.shape[r].length; c++) {
-          if (!cur.shape[r][c]) continue;
-          const px = cur.x + c, py = gy + r;
-          if (py >= 0 && py < ROWS) drawBlock(ctx, px * BS, py * BS, cur, 0.2);
-        }
-      }
+      for (let r = 0; r < cur.shape.length; r++)
+        for (let c = 0; c < cur.shape[r].length; c++)
+          if (cur.shape[r][c]) {
+            const px = cur.x+c, py = gy+r;
+            if (py >= 0 && py < ROWS) drawBlock(ctx, px*BS, py*BS, cur, 0.18);
+          }
     }
   }
 
   // Active piece
   if (cur && !paused) {
-    for (let r = 0; r < cur.shape.length; r++) {
-      for (let c = 0; c < cur.shape[r].length; c++) {
-        if (!cur.shape[r][c]) continue;
-        const px = cur.x + c, py = cur.y + r;
-        if (py >= 0) drawBlock(ctx, px * BS, py * BS, cur);
-      }
-    }
+    for (let r = 0; r < cur.shape.length; r++)
+      for (let c = 0; c < cur.shape[r].length; c++)
+        if (cur.shape[r][c]) {
+          const px = cur.x+c, py = cur.y+r;
+          if (py >= 0) drawBlock(ctx, px*BS, py*BS, cur);
+        }
   }
 
-  // Pause overlay
   if (paused) {
-    ctx.fillStyle = 'rgba(15,0,9,0.75)';
+    ctx.fillStyle    = 'rgba(12,0,8,0.75)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.font         = '2rem Pacifico, cursive';
+    ctx.font         = `${Math.max(1.2, BS*0.06)}rem Pacifico, cursive`;
     ctx.fillStyle    = '#FF1F8E';
     ctx.textAlign    = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('⏸ Paused 💖', canvas.width / 2, canvas.height / 2);
+    ctx.fillText('⏸ Paused 💖', canvas.width/2, canvas.height/2);
   }
 }
 
 function drawNext() {
-  nextCtx.clearRect(0, 0, 100, 100);
-  nextCtx.fillStyle = 'rgba(15,0,9,0.6)';
-  nextCtx.fillRect(0, 0, 100, 100);
+  const nctx = nextCtx;
+  const ncvs = nextCvs;
+  nctx.clearRect(0, 0, ncvs.width, ncvs.height);
+  nctx.fillStyle = 'rgba(12,0,8,0.6)';
+  nctx.fillRect(0, 0, ncvs.width, ncvs.height);
   if (!next) return;
-
   const s  = next.shape;
   const nr = s.length, nc = s[0].length;
-  const bs = Math.min(Math.floor(88 / nc), Math.floor(88 / nr));
-  const sx = (100 - nc * bs) / 2;
-  const sy = (100 - nr * bs) / 2;
-
-  for (let r = 0; r < nr; r++) {
-    for (let c = 0; c < nc; c++) {
-      if (s[r][c]) drawBlock(nextCtx, sx + c * bs, sy + r * bs, next, 1, bs);
-    }
-  }
+  const bs = Math.min(Math.floor((ncvs.width  - 8) / nc), Math.floor((ncvs.height - 8) / nr));
+  const sx = (ncvs.width  - nc * bs) / 2;
+  const sy = (ncvs.height - nr * bs) / 2;
+  for (let r = 0; r < nr; r++)
+    for (let c = 0; c < nc; c++)
+      if (s[r][c]) drawBlock(nctx, sx + c*bs, sy + r*bs, next, 1, bs);
 }
 
-// ── Visual effects ────────────────────────────────────────
+// ── Effects ───────────────────────────────────────────────
 function flashCanvas() {
   canvas.classList.remove('flashing');
   void canvas.offsetWidth;
   canvas.classList.add('flashing');
-  setTimeout(() => canvas.classList.remove('flashing'), 700);
+  setTimeout(() => canvas.classList.remove('flashing'), 750);
 }
 
 function showScorePopup(msg, pts) {
   const el = document.createElement('div');
   el.className = 'score-popup';
   el.textContent = `+${pts.toLocaleString()} ${msg}`;
-  const wrapper = canvas.parentElement;
-  wrapper.style.position = 'relative';
+  const wrap = canvas.parentElement;
   el.style.left = '50%';
-  el.style.top  = '40%';
-  el.style.transform = 'translateX(-50%)';
-  wrapper.appendChild(el);
+  el.style.top  = '38%';
+  wrap.appendChild(el);
   setTimeout(() => el.remove(), 1300);
 }
 
 // ── UI update ─────────────────────────────────────────────
 function updateUI() {
+  const hs = Math.max(highScore, score);
+  // Desktop
   document.getElementById('scoreVal').textContent = score.toLocaleString();
   document.getElementById('linesVal').textContent = lines;
   document.getElementById('levelVal').textContent = level;
-  document.getElementById('bestVal').textContent  = Math.max(highScore, score).toLocaleString();
+  document.getElementById('bestVal').textContent  = hs.toLocaleString();
+  // Mobile
+  document.getElementById('mScoreVal').textContent = score.toLocaleString();
+  document.getElementById('mLevelVal').textContent = level;
+  document.getElementById('mLinesVal').textContent = lines;
+  document.getElementById('mBestVal').textContent  = hs.toLocaleString();
 }
 
-// ── Keyboard input ────────────────────────────────────────
+// ── Overlay management ────────────────────────────────────
+function hideOverlays() {
+  document.getElementById('overlay').style.display = 'none';
+  document.getElementById('mobileOverlay').style.display = 'none';
+}
+
+function showOverlay(title, sub, btnText) {
+  // Desktop
+  document.getElementById('overlayTitle').innerHTML = title;
+  document.getElementById('overlaySub').innerHTML   = sub;
+  document.getElementById('startBtnDesktop').textContent = btnText;
+  document.getElementById('overlay').style.display = 'flex';
+  // Mobile
+  document.getElementById('mOverlayTitle').innerHTML = title;
+  document.getElementById('mOverlaySub').innerHTML   = sub;
+  document.getElementById('startBtnMobile').textContent = btnText;
+  document.getElementById('mobileOverlay').style.display = 'flex';
+}
+
+// ── Start buttons ─────────────────────────────────────────
+document.getElementById('startBtnDesktop').addEventListener('click', startGame);
+document.getElementById('startBtnMobile').addEventListener('click',  startGame);
+
+// ── Keyboard ─────────────────────────────────────────────
 document.addEventListener('keydown', e => {
   switch (e.key) {
     case 'ArrowLeft':  e.preventDefault(); moveLeft();   break;
@@ -881,75 +1039,140 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// ── Touch/mobile button bindings ──────────────────────────
-function bindBtn(id, fn) {
+// ── Touch button bindings (with press-repeat) ─────────────
+function bindRepeat(id, fn, repeatMs = 130) {
   const el = document.getElementById(id);
   if (!el) return;
-  let interval;
-  const start = () => { fn(); interval = setInterval(fn, 140); };
-  const stop  = () => clearInterval(interval);
-  el.addEventListener('touchstart', e => { e.preventDefault(); start(); }, { passive: false });
-  el.addEventListener('touchend',   stop);
-  el.addEventListener('mousedown',  start);
-  el.addEventListener('mouseup',    stop);
+  let iv;
+  const press = (e) => {
+    e.preventDefault();
+    el.classList.add('pressed');
+    fn();
+    iv = setInterval(fn, repeatMs);
+  };
+  const release = () => {
+    el.classList.remove('pressed');
+    clearInterval(iv);
+  };
+  el.addEventListener('touchstart', press, { passive: false });
+  el.addEventListener('touchend',   release);
+  el.addEventListener('touchcancel',release);
+  el.addEventListener('mousedown',  press);
+  el.addEventListener('mouseup',    release);
+  el.addEventListener('mouseleave', release);
 }
-bindBtn('mb-left',   moveLeft);
-bindBtn('mb-right',  moveRight);
-bindBtn('mb-down',   softDrop);
-document.getElementById('mb-rotate')?.addEventListener('touchstart', e => { e.preventDefault(); rotate(); }, { passive: false });
-document.getElementById('mb-rotate')?.addEventListener('click', rotate);
-document.getElementById('mb-drop')?.addEventListener('touchstart', e => { e.preventDefault(); hardDrop(); }, { passive: false });
-document.getElementById('mb-drop')?.addEventListener('click', hardDrop);
 
-// ── Start button ──────────────────────────────────────────
-document.getElementById('startBtn').addEventListener('click', startGame);
+function bindOnce(id, fn) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('touchstart', e => { e.preventDefault(); el.classList.add('pressed'); fn(); setTimeout(() => el.classList.remove('pressed'), 150); }, { passive: false });
+  el.addEventListener('click', fn);
+}
 
-// ── Sparkle generator ────────────────────────────────────
-const SPARKLE_EMOJIS = ['✨','💫','⭐','🌟','💕','🌸','🦋','🎀','💖','🌺','💅'];
+bindRepeat('mb-left',  moveLeft);
+bindRepeat('mb-right', moveRight);
+bindRepeat('mb-down',  softDrop, 120);
+bindOnce('mb-rotate', rotate);
+bindOnce('mb-drop',   hardDrop);
+bindOnce('mb-pause', togglePause);
+
+// ── Swipe gesture on mobile canvas ───────────────────────
+// Thresholds
+const SWIPE_MIN    = 28;  // px — minimum for a swipe
+const SWIPE_QUICK  = 250; // ms — fast down = hard drop
+let touchStart = null;
+
+mobileCanvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  const t = e.touches[0];
+  touchStart = { x: t.clientX, y: t.clientY, ts: Date.now() };
+}, { passive: false });
+
+mobileCanvas.addEventListener('touchend', e => {
+  e.preventDefault();
+  if (!touchStart || !running || paused) return;
+  const t = e.changedTouches[0];
+  const dx = t.clientX - touchStart.x;
+  const dy = t.clientY - touchStart.y;
+  const dt = Date.now() - touchStart.ts;
+  const adx = Math.abs(dx), ady = Math.abs(dy);
+  touchStart = null;
+
+  if (adx < SWIPE_MIN && ady < SWIPE_MIN) {
+    // Tap → rotate
+    rotate();
+    return;
+  }
+  if (adx > ady) {
+    // Horizontal swipe
+    if (dx < 0) moveLeft(); else moveRight();
+  } else {
+    // Vertical swipe
+    if (dy < 0) {
+      rotate();
+    } else {
+      // Down swipe — quick = hard drop, slow = soft drop
+      if (dt < SWIPE_QUICK && ady > 50) hardDrop(); else softDrop();
+    }
+  }
+}, { passive: false });
+
+mobileCanvas.addEventListener('touchmove', e => { e.preventDefault(); }, { passive: false });
+
+// ── Window resize ─────────────────────────────────────────
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    setupCanvases();
+    if (running && !paused) render();
+    else drawStartBg(canvas, ctx);
+  }, 200);
+});
+
+// ── Sparkles ─────────────────────────────────────────────
+const SPARKLE_E = ['✨','💫','⭐','🌟','💕','🌸','🦋','🎀','💖','🌺','💅'];
 const sparkleBox = document.getElementById('sparkles');
-
 function addSparkle() {
   const el = document.createElement('div');
   el.className = 'sparkle';
-  el.textContent = SPARKLE_EMOJIS[Math.floor(Math.random() * SPARKLE_EMOJIS.length)];
+  el.textContent = SPARKLE_E[Math.floor(Math.random() * SPARKLE_E.length)];
   el.style.left             = (Math.random() * 100) + 'vw';
   el.style.bottom           = '-5vh';
-  el.style.fontSize         = (0.8 + Math.random() * 1.4) + 'rem';
-  el.style.animationDuration = (10 + Math.random() * 15) + 's';
-  el.style.animationDelay   = (Math.random() * 3) + 's';
-  el.style.opacity          = 0.7 + Math.random() * 0.3;
+  el.style.fontSize         = (0.7 + Math.random() * 1.2) + 'rem';
+  el.style.animationDuration = (10 + Math.random() * 14) + 's';
+  el.style.animationDelay   = (Math.random() * 2) + 's';
   sparkleBox.appendChild(el);
-  setTimeout(() => el.remove(), 28000);
+  setTimeout(() => el.remove(), 27000);
 }
+for (let i = 0; i < 10; i++) setTimeout(addSparkle, i * 250);
+setInterval(addSparkle, 1100);
 
-for (let i = 0; i < 10; i++) setTimeout(addSparkle, i * 300);
-setInterval(addSparkle, 1200);
+// ── Init ──────────────────────────────────────────────────
+highScore = parseInt(localStorage.getItem('ronis-hs') || '0');
+updateUI();
+setupCanvases();
 
-// ── Initial render ────────────────────────────────────────
-board = newBoard();
-ctx.fillStyle = 'rgba(15, 0, 9, 0.95)';
-ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-// Draw placeholder sparkle pattern on start screen
-(function drawStartBg() {
-  ctx.fillStyle = 'rgba(15, 0, 9, 0.95)';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+function drawStartBg(cvs, c) {
   const emojis = ['🌸','💖','🎀','🦋','💄','💅','🌺','✨'];
+  c.fillStyle = 'rgba(12,0,8,0.97)';
+  c.fillRect(0, 0, cvs.width, cvs.height);
   for (let r = 0; r < ROWS; r++) {
-    for (let c = 0; c < COLS; c++) {
-      if (Math.random() > 0.7) {
-        ctx.font = '16px serif';
-        ctx.globalAlpha = 0.12 + Math.random() * 0.12;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(emojis[Math.floor(Math.random() * emojis.length)], c * BS + BS/2, r * BS + BS/2);
-        ctx.globalAlpha = 1;
+    for (let col = 0; col < COLS; col++) {
+      if (Math.random() > 0.68) {
+        c.globalAlpha    = 0.08 + Math.random() * 0.1;
+        c.font           = `${BS * 0.55}px serif`;
+        c.textAlign      = 'center';
+        c.textBaseline   = 'middle';
+        c.fillText(emojis[Math.floor(Math.random() * emojis.length)], col*BS + BS/2, r*BS + BS/2);
+        c.globalAlpha    = 1;
       }
     }
   }
-})();
+}
 
-// Write CWD for server tracking
+drawStartBg(desktopCanvas, desktopCtx);
+drawStartBg(mobileCanvas,  mobileCtx);
 </script>
 </body>
 </html>
