@@ -1044,29 +1044,41 @@ function bindRepeat(id, fn, repeatMs = 130) {
   const el = document.getElementById(id);
   if (!el) return;
   let iv;
+  let didTouch = false;
   const press = (e) => {
     e.preventDefault();
     el.classList.add('pressed');
     fn();
+    clearInterval(iv);
     iv = setInterval(fn, repeatMs);
   };
-  const release = () => {
+  const release = (e) => {
+    if (e) e.preventDefault();
     el.classList.remove('pressed');
     clearInterval(iv);
   };
-  el.addEventListener('touchstart', press, { passive: false });
-  el.addEventListener('touchend',   release);
-  el.addEventListener('touchcancel',release);
-  el.addEventListener('mousedown',  press);
-  el.addEventListener('mouseup',    release);
-  el.addEventListener('mouseleave', release);
+  el.addEventListener('touchstart',  e => { didTouch = true; press(e); }, { passive: false });
+  el.addEventListener('touchend',    release, { passive: false });
+  el.addEventListener('touchcancel', release, { passive: false });
+  // Mouse fallback (desktop only)
+  el.addEventListener('mousedown',  e => { if (!didTouch) press(e); else didTouch = false; });
+  el.addEventListener('mouseup',    e => { if (!didTouch) release(e); });
+  el.addEventListener('mouseleave', e => { if (!didTouch) release(e); });
 }
 
 function bindOnce(id, fn) {
   const el = document.getElementById(id);
   if (!el) return;
-  el.addEventListener('touchstart', e => { e.preventDefault(); el.classList.add('pressed'); fn(); setTimeout(() => el.classList.remove('pressed'), 150); }, { passive: false });
-  el.addEventListener('click', fn);
+  let didTouch = false;
+  el.addEventListener('touchstart', e => {
+    e.preventDefault();
+    didTouch = true;
+    el.classList.add('pressed');
+    fn();
+    setTimeout(() => el.classList.remove('pressed'), 150);
+  }, { passive: false });
+  // Fallback for mouse (desktop); skipped if touch already fired
+  el.addEventListener('click', () => { if (!didTouch) fn(); didTouch = false; });
 }
 
 bindRepeat('mb-left',  moveLeft);
@@ -1076,48 +1088,71 @@ bindOnce('mb-rotate', rotate);
 bindOnce('mb-drop',   hardDrop);
 bindOnce('mb-pause', togglePause);
 
-// ── Swipe gesture on mobile canvas ───────────────────────
-// Thresholds
-const SWIPE_MIN    = 28;  // px — minimum for a swipe
-const SWIPE_QUICK  = 250; // ms — fast down = hard drop
-let touchStart = null;
+// ── Swipe / drag gesture on mobile canvas ────────────────
+// Strategy:
+//   touchmove → drag left/right moves piece column-by-column
+//               drag down soft-drops step-by-step
+//   touchend  → tap (tiny move) = rotate
+//               fast downward flick = hard drop
+//               upward swipe = rotate
+let touchStart  = null;
+let lastTouchX  = 0;
+let lastTouchY  = 0;
+const DRAG_FRAC = 0.65; // fraction of BS to count as one column move
 
 mobileCanvas.addEventListener('touchstart', e => {
   e.preventDefault();
   const t = e.touches[0];
   touchStart = { x: t.clientX, y: t.clientY, ts: Date.now() };
+  lastTouchX = t.clientX;
+  lastTouchY = t.clientY;
+}, { passive: false });
+
+mobileCanvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  if (!touchStart || !running || paused) return;
+  const t  = e.touches[0];
+  const dx = t.clientX - lastTouchX;
+  const dy = t.clientY - lastTouchY;
+
+  // Horizontal drag — one column per BS*DRAG_FRAC pixels
+  if (Math.abs(dx) >= BS * DRAG_FRAC) {
+    if (dx > 0) moveRight(); else moveLeft();
+    lastTouchX = t.clientX;
+  }
+
+  // Downward drag — soft drop one row per BS*DRAG_FRAC pixels
+  if (dy >= BS * DRAG_FRAC) {
+    softDrop();
+    lastTouchY = t.clientY;
+  }
 }, { passive: false });
 
 mobileCanvas.addEventListener('touchend', e => {
   e.preventDefault();
-  if (!touchStart || !running || paused) return;
-  const t = e.changedTouches[0];
-  const dx = t.clientX - touchStart.x;
-  const dy = t.clientY - touchStart.y;
-  const dt = Date.now() - touchStart.ts;
+  if (!touchStart) return;
+  const t   = e.changedTouches[0];
+  const dx  = t.clientX - touchStart.x;
+  const dy  = t.clientY - touchStart.y;
+  const dt  = Date.now() - touchStart.ts;
   const adx = Math.abs(dx), ady = Math.abs(dy);
   touchStart = null;
 
-  if (adx < SWIPE_MIN && ady < SWIPE_MIN) {
-    // Tap → rotate
+  // Tap (very small movement, quick) → rotate
+  if (adx < 18 && ady < 18 && dt < 350) {
     rotate();
     return;
   }
-  if (adx > ady) {
-    // Horizontal swipe
-    if (dx < 0) moveLeft(); else moveRight();
-  } else {
-    // Vertical swipe
-    if (dy < 0) {
-      rotate();
-    } else {
-      // Down swipe — quick = hard drop, slow = soft drop
-      if (dt < SWIPE_QUICK && ady > 50) hardDrop(); else softDrop();
-    }
+  // Fast downward flick → hard drop
+  if (dy > 0 && ady > 55 && ady > adx * 1.5 && dt < 300) {
+    hardDrop();
+    return;
+  }
+  // Upward swipe → rotate
+  if (dy < -25 && ady > adx) {
+    rotate();
   }
 }, { passive: false });
-
-mobileCanvas.addEventListener('touchmove', e => { e.preventDefault(); }, { passive: false });
 
 // ── Window resize ─────────────────────────────────────────
 let resizeTimer;
